@@ -1,0 +1,100 @@
+---
+// TODO: the prices below are placeholders. Replace them with your real rates.
+const groups = [
+  {
+    title: 'Web and programming',
+    blurb: 'Projects priced by scope. Final cost depends on the number of pages and features.',
+    items: [
+      { name: 'Landing page', note: 'One responsive page built with Astro, HTML, CSS and JavaScript.', price: '₱3,000', unit: 'starting at' },
+      { name: 'Multi-page website', note: 'Up to five pages with a shared navbar, footer and contact form.', price: '₱6,000', unit: 'starting at' },
+      { name: 'Online store', note: 'Product pages and a working cart, like the Finora shop.', price: '₱12,000', unit: 'starting at' },
+      { name: 'UI design', note: 'Layouts, color palettes and type for web and mobile screens.', price: '₱2,000', unit: 'per design' },
+      { name: 'Custom program', note: 'School or small-business software in Python, Java or PHP, with a MySQL database.', price: '₱1,500', unit: 'starting at' },
+    ],
+  },
+  {
+    title: 'Side hustles',
+    blurb: 'Smaller jobs we take on outside of web projects.',
+    items: [
+      { name: 'Poster and logo design', note: 'Posters, logos, tarpaulins and event layouts for schools and small shops.', price: '₱200', unit: 'per design' },
+      { name: 'Photo and video editing', note: 'Photo retouching and short video edits for events, reels and school projects.', price: '₱300', unit: 'per project' },
+      { name: 'Typing and document formatting', note: 'Typing, formatting and proofreading for papers, reports and resumes.', price: '₱50', unit: 'per page' },
+      { name: 'Laptop cleaning and setup', note: 'Dust cleaning, software installs and basic troubleshooting.', price: '₱350', unit: 'per laptop' },
+      { name: 'Subject tutoring', note: 'Math and English help for high school and college students.', price: '₱250', unit: 'per hour' },
+    ],
+  },
+];
+---
+
+<section id="services" class="section">
+  <div class="container">
+    <div class="head">
+      <h2>Services</h2>
+      <p>What we build and what it costs, from the first layout to the finished site.</p>
+    </div>
+
+    {groups.map((g) => (
+      <div class="group">
+        <div class="label">
+          <h3>{g.title}</h3>
+          <p>{g.blurb}</p>
+        </div>
+
+        <ul class="list">
+          {g.items.map((s) => (
+            <li class="row">
+              <div class="what">
+                <h4>{s.name}</h4>
+                <p>{s.note}</p>
+              </div>
+              <p class="price">
+                <span class="unit">{s.unit}</span>
+                <span class="amount">{s.price}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+</section>
+
+<style>
+  .head { display: grid; gap: 1.25rem; margin-bottom: 4rem; max-width: 60ch; }
+  .head p { font-size: 1.2rem; }
+
+  .group {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem 3rem;
+    padding-block: 2.5rem;
+    border-top: var(--line) solid var(--black);
+  }
+  .group:last-child { border-bottom: var(--line) solid var(--black); }
+
+  .label { display: grid; gap: 0.75rem; align-content: start; }
+  .label h3 { font-size: 1.75rem; line-height: 1.1; }
+
+  .row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem 2rem;
+    align-items: baseline;
+    padding-block: 1.5rem;
+    border-bottom: 2px solid var(--black);
+  }
+  .row:first-child { padding-top: 0; }
+  .row:last-child { border-bottom: 0; padding-bottom: 0; }
+
+  .what { display: grid; gap: 0.4rem; max-width: 50ch; }
+  .what h4 { font-size: 1.4rem; line-height: 1.15; }
+
+  .price { display: grid; justify-items: end; gap: 0.1rem; }
+  .unit { font-size: 0.95rem; }
+  .amount { font-size: 2rem; font-weight: 900; line-height: 1; }
+
+  @media (min-width: 900px) {
+    .group { grid-template-columns: 16rem minmax(0, 1fr); }
+    .label { position: sticky; top: 2rem; }
+  }
+</style>

@@ -1,0 +1,38 @@
+---
+interface Props {
+  size?: number;
+}
+const { size = 40 } = Astro.props;
+---
+
+<span class="fish-logo" style={`--s: ${size}px`}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="8 14 52 36"
+    width={size * 1.45}
+    height={size}
+    fill="currentColor"
+    aria-hidden="true"
+  >
+    <path d="M12 32 C20 18, 38 18, 46 32 C38 46, 20 46, 12 32 Z"></path>
+    <path d="M44 32 L56 22 C54 28, 54 36, 56 42 Z"></path>
+    <circle cx="23" cy="29" r="2.6" fill="var(--bg, #000)"></circle>
+  </svg>
+  <span class="name">AquaWorld</span>
+</span>
+
+<style>
+  .fish-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--s) * 0.3);
+    color: inherit;
+  }
+  .fish-logo svg { flex: none; }
+  .name {
+    font-size: calc(var(--s) * 0.65);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+</style>

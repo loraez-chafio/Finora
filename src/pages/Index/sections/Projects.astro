@@ -1,0 +1,71 @@
+---
+// TODO: replace the two projects below with ones you actually built.
+const projects = [
+  {
+    name: 'AquaWorld',
+    note: 'An aquatic pet store website with a product shop and a working cart, built with Astro.',
+    tech: 'Astro, HTML, CSS, JavaScript',
+    href: '/products',
+    link: 'Open the shop',
+  },
+  {
+    name: 'Design and media portfolio',
+    note: 'A gallery site that shows our poster and logo designs and our photo and video edits, so clients can see the work before they order.',
+    tech: 'Astro, HTML, CSS, JavaScript',
+  },
+  {
+    name: 'Laptop service booking page',
+    note: 'A booking site for our laptop cleaning and setup service, with a price list and a request form for pickup times.',
+    tech: 'Astro, HTML, CSS, JavaScript',
+  },
+];
+---
+
+<section id="projects" class="section">
+  <div class="container">
+    <div class="head">
+      <h2>Projects</h2>
+      <p>Work we have built, with the tools we used.</p>
+    </div>
+
+    <ul class="grid">
+      {projects.map((p) => (
+        <li class="cell">
+          <h3>{p.name}</h3>
+          <p>{p.note}</p>
+          <p class="tech"><strong>Built with:</strong> {p.tech}</p>
+          {p.href && <a href={p.href} class="more">{p.link}</a>}
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .head { display: grid; gap: 1.25rem; margin-bottom: 3rem; }
+  .head p { font-size: 1.2rem; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    border-top: var(--line) solid var(--black);
+    border-left: var(--line) solid var(--black);
+  }
+  .cell {
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+    min-height: 240px;
+    padding: 1.75rem;
+    color: var(--fg);
+    background: var(--bg);
+    border-right: var(--line) solid var(--black);
+    border-bottom: var(--line) solid var(--black);
+    transition: color 0.15s ease, background 0.15s ease;
+  }
+  .cell:hover {
+    --fg: var(--white);
+    --bg: var(--black);
+  }
+  .more { font-weight: 700; text-decoration: underline; justify-self: start; }
+</style>

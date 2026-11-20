@@ -1,0 +1,69 @@
+---
+import FishLogo from './FishLogo.astro';
+import CodeLogo from './Logo.astro';
+
+const year = new Date().getFullYear();
+const isShop = Astro.url.pathname.startsWith('/products');
+---
+
+<footer class="site-footer inverted">
+  <div class="container wrap">
+    <div class="brand">
+      {isShop ? <FishLogo size={48} /> : <CodeLogo size={48} />}
+      <p>
+        {isShop
+          ? 'Aquatic pets, tanks and supplies in one shop.'
+          : 'A web and programming portfolio, presented as an aquatic pet store.'}
+      </p>
+    </div>
+
+    <div>
+      <h3>Explore</h3>
+      <ul>
+        <li><a href="/#services">Services</a></li>
+        <li><a href="/#process">Process</a></li>
+        <li><a href="/#about">About</a></li>
+        <li><a href="/#projects">Projects</a></li>
+        <li><a href="/products">Shop</a></li>
+        <li><a href="/#contact">Contact</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <h3>Contact us</h3>
+      <p>c20234061.loraez@csav.edu.ph</p>
+      <p>c20245392.dequito@csav.edu.ph</p>
+    </div>
+  </div>
+
+  <p class="copy container">
+    {isShop
+      ? `© ${year} AquaWorld. All rights reserved.`
+      : `© ${year} Finora. A student project by [Member 1] and [Member 2].`}
+  </p>
+</footer>
+
+<style>
+  .site-footer {
+    color: var(--fg);
+    background: var(--bg);
+    border-top: var(--line) solid var(--black);
+    padding-block: 4rem 2rem;
+  }
+  .wrap {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2.5rem;
+  }
+  .brand { display: grid; gap: 1rem; align-content: start; }
+  h3 { margin-bottom: 0.9rem; font-size: 1.1rem; }
+  ul { display: grid; gap: 0.35rem; }
+  a { text-decoration: none; border-bottom: 2px solid transparent; }
+  a:hover { border-bottom-color: var(--fg); }
+  .copy {
+    margin-top: 3rem;
+    padding-top: 1.2rem;
+    border-top: 2px solid var(--fg);
+    font-size: 0.9rem;
+  }
+</style>

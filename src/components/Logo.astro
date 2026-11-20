@@ -1,0 +1,43 @@
+---
+interface Props {
+  size?: number;
+}
+const { size = 40 } = Astro.props;
+---
+
+<span class="code-logo" style={`--s: ${size}px`}>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 64 64"
+    width={size}
+    height={size}
+    fill="none"
+    stroke="currentColor"
+    stroke-width="5"
+    stroke-linecap="square"
+    stroke-linejoin="miter"
+    aria-hidden="true"
+  >
+    <circle cx="32" cy="32" r="29"></circle>
+    <polyline points="25,22 15,32 25,42"></polyline>
+    <polyline points="39,22 49,32 39,42"></polyline>
+    <line x1="35" y1="20" x2="29" y2="44"></line>
+  </svg>
+  <span class="name">Finora</span>
+</span>
+
+<style>
+  .code-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: calc(var(--s) * 0.3);
+    color: inherit;
+  }
+  .code-logo svg { flex: none; }
+  .name {
+    font-size: calc(var(--s) * 0.65);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+</style>

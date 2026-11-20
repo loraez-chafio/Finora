@@ -1,0 +1,29 @@
+---
+---
+
+<section class="hero inverted">
+  <div class="container content">
+    <h1>We build websites and software.</h1>
+    <p class="lead">
+      We are two students in web development and programming. Finora, an aquatic pet
+      store, is the project that shows what we can build.
+    </p>
+    <div class="actions">
+      <a href="/#services" class="btn">See our services</a>
+      <a href="/#contact" class="btn btn-outline">Contact us</a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    color: var(--fg);
+    background: var(--bg);
+    /* Extra top space clears the absolutely positioned header. */
+    padding-block: 9rem 6rem;
+  }
+  .content { display: grid; gap: 1.75rem; max-width: 60rem; }
+  h1 { font-size: clamp(2.75rem, 9vw, 6.5rem); line-height: 0.95; }
+  .lead { max-width: 40rem; font-size: 1.35rem; line-height: 1.35; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+</style>

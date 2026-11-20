@@ -1,0 +1,131 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProductArt from '../components/ProductArt.astro';
+import { categories, products } from '../data/products.js';
+---
+
+<BaseLayout title="Shop | Finora" description="Browse fish, turtles, aquarium animals, food, tanks, accessories and maintenance supplies.">
+  <section class="intro section inverted">
+    <div class="container">
+      <h1>Shop</h1>
+      <p>Everything for your tank, from the animal to the water it lives in.</p>
+    </div>
+  </section>
+
+  <section class="section list">
+    <div class="container">
+      <div class="filters" role="group" aria-label="Filter by category">
+        <button type="button" class="btn btn-outline filter" data-category="All" aria-pressed="true">All</button>
+        {categories.map((c) => (
+          <button type="button" class="btn btn-outline filter" data-category={c} aria-pressed="false">{c}</button>
+        ))}
+      </div>
+
+      <p class="count" aria-live="polite"><span id="count">{products.length}</span> products</p>
+
+      <ul class="grid">
+        {products.map((p) => (
+          <li class="card" data-category={p.category}>
+            <div class:list={['art', { photo: p.image }]}>
+              {p.image
+                ? <img src={p.image} alt={p.name} loading="lazy" />
+                : <ProductArt id={p.id} />}
+            </div>
+            <div class="body">
+              <p class="cat">{p.category}</p>
+              <h3>{p.name}</h3>
+              <p class="price">${p.price.toFixed(2)}</p>
+              <button
+                type="button"
+                class="btn"
+                data-add-to-cart
+                data-id={p.id}
+                data-name={p.name}
+                data-price={p.price}
+              >
+                Add to cart
+              </button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('.filter');
+  const cards = document.querySelectorAll<HTMLElement>('.card');
+  const count = document.getElementById('count');
+
+  buttons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const chosen = button.dataset.category;
+      let shown = 0;
+
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+
+      cards.forEach((card) => {
+        const match = chosen === 'All' || card.dataset.category === chosen;
+        card.hidden = !match;
+        if (match) shown += 1;
+      });
+
+      if (count) count.textContent = String(shown);
+    });
+  });
+</script>
+
+<style>
+  .intro {
+    padding-top: 10rem;
+    border-top: 0;
+  }
+  .intro .container { display: grid; gap: 1.25rem; }
+  h1 {
+    font-size: clamp(3.5rem, 14vw, 10rem);
+    line-height: 0.85;
+    letter-spacing: -0.05em;
+  }
+  .intro p { font-size: 1.3rem; }
+
+  .filters { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+
+  /* The chosen filter is solid, the others are outlined. */
+  .filter[aria-pressed='true'] {
+    color: var(--bg);
+    background: var(--fg);
+  }
+
+  .count { margin-top: 1.5rem; font-weight: 700; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  .card { border: var(--line) solid var(--black); background: var(--white); }
+  .card[hidden] { display: none; }
+
+  .art {
+    height: 190px;
+    padding: 1rem;
+    border-bottom: var(--line) solid var(--black);
+    background: var(--white);
+  }
+  /* Real photos fill the box and are forced to black and white. */
+  .art.photo { padding: 0; }
+  .art img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(1) contrast(1.1);
+  }
+
+  .body { display: grid; gap: 0.4rem; padding: 1.25rem; justify-items: start; }
+  .cat { font-weight: 600; }
+  .price { font-weight: 900; font-size: 1.4rem; }
+  .body .btn { margin-top: 0.5rem; padding: 0.55rem 1.2rem; }
+</style>

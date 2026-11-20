@@ -1,0 +1,296 @@
+---
+---
+
+<div class="cart-overlay" data-cart-overlay hidden></div>
+
+<aside class="cart" id="cart" aria-label="Shopping cart" aria-hidden="true" inert>
+  <div class="cart-head">
+    <h2>Your cart</h2>
+    <button type="button" class="btn btn-outline cart-close" data-cart-close>Close</button>
+  </div>
+
+  <ul class="cart-items" data-cart-items></ul>
+  <p class="cart-empty" data-cart-empty>Your cart is empty.</p>
+
+  <div class="cart-foot">
+    <p class="cart-total"><span>Total</span><span data-cart-total>$0.00</span></p>
+    <button type="button" class="btn" data-cart-checkout>Checkout</button>
+    <button type="button" class="btn btn-outline" data-cart-clear>Clear cart</button>
+    <p class="cart-msg" data-cart-msg role="status"></p>
+  </div>
+</aside>
+
+<script>
+  type Item = { id: string; name: string; price: number; qty: number };
+
+  const KEY = 'finora-cart';
+
+  function load(): Item[] {
+    try {
+      const raw = localStorage.getItem(KEY);
+      const data = raw ? JSON.parse(raw) : [];
+      return Array.isArray(data) ? data : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function save(list: Item[]) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(list));
+    } catch {
+      /* storage can be blocked; the cart still works until refresh */
+    }
+  }
+
+  const cart = document.getElementById('cart') as HTMLElement;
+  const overlay = document.querySelector('[data-cart-overlay]') as HTMLElement;
+  const listEl = document.querySelector('[data-cart-items]') as HTMLElement;
+  const emptyEl = document.querySelector('[data-cart-empty]') as HTMLElement;
+  const totalEl = document.querySelector('[data-cart-total]') as HTMLElement;
+  const msgEl = document.querySelector('[data-cart-msg]') as HTMLElement;
+  const checkoutBtn = document.querySelector('[data-cart-checkout]') as HTMLButtonElement;
+  const clearBtn = document.querySelector('[data-cart-clear]') as HTMLButtonElement;
+  const closeBtn = document.querySelector('[data-cart-close]') as HTMLButtonElement;
+
+  let items: Item[] = load();
+  let lastFocus: HTMLElement | null = null;
+
+  const money = (n: number) => '$' + n.toFixed(2);
+
+  function el(tag: string, className?: string, text?: string) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  function button(label: string, action: string, id: string, aria: string) {
+    const b = el('button', 'cart-step', label) as HTMLButtonElement;
+    b.type = 'button';
+    b.dataset.action = action;
+    b.dataset.id = id;
+    b.setAttribute('aria-label', aria);
+    return b;
+  }
+
+  function row(item: Item) {
+    const li = el('li', 'cart-row');
+
+    const info = el('div', 'cart-info');
+    info.append(el('p', 'cart-name', item.name), el('p', 'cart-price', money(item.price) + ' each'));
+
+    const qty = el('div', 'cart-qty');
+    qty.append(
+      button('−', 'dec', item.id, 'Decrease quantity of ' + item.name),
+      el('span', 'cart-num', String(item.qty)),
+      button('+', 'inc', item.id, 'Increase quantity of ' + item.name),
+    );
+
+    const remove = el('button', 'cart-remove', 'Remove') as HTMLButtonElement;
+    remove.type = 'button';
+    remove.dataset.action = 'remove';
+    remove.dataset.id = item.id;
+    remove.setAttribute('aria-label', 'Remove ' + item.name + ' from cart');
+
+    li.append(info, qty, remove);
+    return li;
+  }
+
+  function render() {
+    const count = items.reduce((sum, i) => sum + i.qty, 0);
+    const total = items.reduce((sum, i) => sum + i.qty * i.price, 0);
+
+    document.querySelectorAll('[data-cart-count]').forEach((node) => {
+      node.textContent = String(count);
+    });
+
+    totalEl.textContent = money(total);
+    emptyEl.hidden = items.length > 0;
+    listEl.replaceChildren(...items.map(row));
+    checkoutBtn.disabled = items.length === 0;
+    clearBtn.disabled = items.length === 0;
+  }
+
+  function commit() {
+    save(items);
+    render();
+  }
+
+  function openCart() {
+    lastFocus = document.activeElement as HTMLElement | null;
+    msgEl.textContent = '';
+    cart.removeAttribute('inert');
+    cart.setAttribute('aria-hidden', 'false');
+    cart.classList.add('open');
+    overlay.hidden = false;
+    closeBtn.focus();
+  }
+
+  function closeCart() {
+    cart.classList.remove('open');
+    cart.setAttribute('aria-hidden', 'true');
+    cart.setAttribute('inert', '');
+    overlay.hidden = true;
+    lastFocus?.focus();
+  }
+
+  function addItem(id: string, name: string, price: number) {
+    const found = items.find((i) => i.id === id);
+    if (found) found.qty += 1;
+    else items.push({ id, name, price, qty: 1 });
+    commit();
+  }
+
+  document.addEventListener('click', (event) => {
+    const target = event.target as HTMLElement;
+
+    const add = target.closest('[data-add-to-cart]') as HTMLButtonElement | null;
+    if (add) {
+      addItem(add.dataset.id ?? '', add.dataset.name ?? '', Number(add.dataset.price));
+      const original = add.dataset.label ?? add.textContent ?? '';
+      add.dataset.label = original;
+      add.textContent = 'Added';
+      window.setTimeout(() => {
+        add.textContent = original;
+      }, 1200);
+      return;
+    }
+
+    if (target.closest('[data-cart-open]')) return openCart();
+    if (target.closest('[data-cart-close]') || target === overlay) return closeCart();
+
+    const act = target.closest('[data-action]') as HTMLElement | null;
+    if (act && cart.contains(act)) {
+      const item = items.find((i) => i.id === act.dataset.id);
+      if (!item) return;
+      if (act.dataset.action === 'inc') item.qty += 1;
+      if (act.dataset.action === 'dec') item.qty -= 1;
+      if (act.dataset.action === 'remove') item.qty = 0;
+      items = items.filter((i) => i.qty > 0);
+      commit();
+      return;
+    }
+
+    if (target.closest('[data-cart-clear]')) {
+      items = [];
+      msgEl.textContent = '';
+      commit();
+      return;
+    }
+
+    if (target.closest('[data-cart-checkout]') && items.length > 0) {
+      items = [];
+      commit();
+      msgEl.textContent = 'Thank you for your order. This is a demo, so no payment was taken.';
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape' && cart.classList.contains('open')) closeCart();
+  });
+
+  // Keep the cart in sync across open tabs.
+  window.addEventListener('storage', (event) => {
+    if (event.key === KEY) {
+      items = load();
+      render();
+    }
+  });
+
+  render();
+</script>
+
+<style is:global>
+  .cart-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    background: rgba(0, 0, 0, 0.7);
+  }
+  .cart-overlay[hidden] { display: none; }
+
+  .cart {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    width: min(440px, 100%);
+    color: var(--black);
+    background: var(--white);
+    border-left: var(--line) solid var(--black);
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+  }
+  .cart.open { transform: none; }
+
+  .cart-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+    border-bottom: var(--line) solid var(--black);
+  }
+  .cart-head h2 { font-size: 2rem; }
+  .cart-close { padding: 0.5rem 1.1rem; }
+
+  .cart-items { flex: 1; overflow-y: auto; }
+  .cart-empty { padding: 1.5rem; font-weight: 700; }
+  .cart-empty[hidden] { display: none; }
+
+  .cart-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0.6rem 1rem;
+    align-items: center;
+    padding: 1.1rem 1.5rem;
+    border-bottom: 2px solid var(--black);
+  }
+  .cart-name { font-weight: 800; }
+  .cart-qty { display: flex; align-items: center; gap: 0.5rem; }
+  .cart-num { min-width: 1.5rem; text-align: center; font-weight: 800; }
+  .cart-step {
+    width: 2rem;
+    height: 2rem;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    color: var(--black);
+    background: var(--white);
+    border: 2px solid var(--black);
+  }
+  .cart-step:hover { color: var(--white); background: var(--black); }
+  .cart-remove {
+    justify-self: start;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    color: var(--black);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+  }
+
+  .cart-foot {
+    display: grid;
+    gap: 0.75rem;
+    padding: 1.25rem 1.5rem 1.5rem;
+    border-top: var(--line) solid var(--black);
+  }
+  .cart-total {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 900;
+    font-size: 1.4rem;
+  }
+  .cart .btn { color: var(--white); background: var(--black); border-color: var(--black); }
+  .cart .btn:hover { color: var(--black); background: var(--white); }
+  .cart .btn-outline { color: var(--black); background: var(--white); }
+  .cart .btn-outline:hover { color: var(--white); background: var(--black); }
+  .cart .btn:disabled { opacity: 0.35; cursor: not-allowed; }
+  .cart-msg { font-weight: 700; }
+</style>

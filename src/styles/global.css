@@ -1,0 +1,93 @@
+:root {
+  --black: #000;
+  --white: #fff;
+
+  /* Each section sets these two. Default is black on white. */
+  --fg: var(--black);
+  --bg: var(--white);
+
+  --font: 'Archivo', system-ui, sans-serif;
+  --line: 3px;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  font-family: var(--font);
+  font-size: 1.0625rem;
+  font-variation-settings: 'wdth' 100;
+  line-height: 1.6;
+  color: var(--fg);
+  background: var(--bg);
+}
+
+::selection { background: var(--black); color: var(--white); }
+
+h1, h2, h3 {
+  margin: 0;
+  font-family: var(--font);
+  font-weight: 900;
+  font-variation-settings: 'wdth' 125;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
+h2 { font-size: clamp(2.5rem, 7vw, 5rem); }
+h3 { font-size: 1.4rem; line-height: 1.1; letter-spacing: -0.01em; }
+
+p { margin: 0; max-width: 60ch; }
+a { color: inherit; }
+ul, ol { list-style: none; margin: 0; padding: 0; }
+
+:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 4px;
+}
+
+.container {
+  width: min(1200px, 100% - 2.5rem);
+  margin-inline: auto;
+}
+
+.section {
+  color: var(--fg);
+  background: var(--bg);
+  padding-block: clamp(4rem, 10vw, 7rem);
+  border-top: var(--line) solid var(--black);
+}
+
+/* White text on black. Add this class to any section. */
+.inverted {
+  --fg: var(--white);
+  --bg: var(--black);
+}
+
+/* Buttons flip with their section. */
+.btn {
+  display: inline-block;
+  padding: 0.9rem 1.8rem;
+  font: inherit;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+  color: var(--bg);
+  background: var(--fg);
+  border: var(--line) solid var(--fg);
+  transition: color 0.15s ease, background 0.15s ease;
+}
+.btn:hover { color: var(--fg); background: var(--bg); }
+
+.btn-outline { color: var(--fg); background: transparent; }
+.btn-outline:hover { color: var(--bg); background: var(--fg); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+}
+

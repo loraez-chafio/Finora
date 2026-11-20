@@ -1,0 +1,122 @@
+---
+import FishLogo from './FishLogo.astro';
+import CodeLogo from './Logo.astro';
+
+const links = [
+  { href: '/#services', label: 'Services' },
+  { href: '/#process', label: 'Process' },
+  { href: '/#about', label: 'About' },
+  { href: '/#projects', label: 'Projects' },
+  { href: '/products', label: 'Shop' },
+  { href: '/#contact', label: 'Contact' },
+];
+
+// The cart button and the fish logo only appear on the shop pages.
+const isShop = Astro.url.pathname.startsWith('/products');
+---
+
+<header class="site-header inverted">
+  <div class="container bar">
+    <a href="/" class="brand" aria-label={isShop ? 'AquaWorld home' : 'Finora home'}>
+      {isShop ? <FishLogo size={40} /> : <CodeLogo size={40} />}
+    </a>
+
+    <nav id="main-nav" aria-label="Main">
+      <ul>
+        {links.map((l) => (
+          <li><a href={l.href}>{l.label}</a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <div class="tools">
+      {isShop && (
+        <button type="button" class="tool-btn" data-cart-open>
+          Cart (<span data-cart-count>0</span>)
+        </button>
+      )}
+      <button
+        type="button"
+        class="tool-btn menu-btn"
+        aria-expanded="false"
+        aria-controls="main-nav"
+      >
+        Menu
+      </button>
+    </div>
+  </div>
+</header>
+
+<script>
+  const button = document.querySelector<HTMLButtonElement>('.menu-btn');
+  const nav = document.getElementById('main-nav');
+
+  function setOpen(open: boolean) {
+    button?.setAttribute('aria-expanded', String(open));
+    nav?.classList.toggle('open', open);
+  }
+
+  button?.addEventListener('click', () => {
+    setOpen(button.getAttribute('aria-expanded') !== 'true');
+  });
+
+  // Close the menu after choosing a link.
+  nav?.querySelectorAll('a').forEach((link) => {
+    link.addEventListener('click', () => setOpen(false));
+  });
+</script>
+
+<style>
+  .site-header {
+    position: absolute;
+    inset: 0 0 auto 0;
+    z-index: 10;
+    padding-block: 1.1rem;
+    color: var(--fg);
+    border-bottom: var(--line) solid var(--fg);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem 2rem;
+    flex-wrap: wrap;
+  }
+  .brand { order: 1; text-decoration: none; }
+
+  nav { order: 2; }
+  nav ul { display: flex; flex-wrap: wrap; gap: 0.4rem 1.75rem; }
+  nav a {
+    font-weight: 600;
+    text-decoration: none;
+    padding-block: 0.2rem;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover { border-bottom-color: var(--fg); }
+
+  .tools { order: 3; display: flex; gap: 0.6rem; }
+  .tool-btn {
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--fg);
+    background: transparent;
+    padding: 0.5rem 1.1rem;
+    border: var(--line) solid var(--fg);
+  }
+  .tool-btn:hover,
+  .menu-btn[aria-expanded='true'] {
+    color: var(--bg);
+    background: var(--fg);
+  }
+  .menu-btn { display: none; }
+
+  /* Phones: links collapse behind the Menu button. */
+  @media (max-width: 760px) {
+    .menu-btn { display: block; }
+    nav { order: 4; display: none; width: 100%; }
+    nav.open { display: block; }
+    nav ul { flex-direction: column; gap: 0.25rem; padding-top: 1rem; }
+    nav a { display: block; padding-block: 0.6rem; font-size: 1.2rem; }
+  }
+</style>
