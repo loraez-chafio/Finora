@@ -2,18 +2,18 @@
 // TODO: fill in the real details for each member.
 const members = [
   {
-    name: '[Member 1 full name]',
-    role: '[Course], [Year level]',
-    school: 'CSAV',
-    bio: '[Two or three sentences about you: what you study, what you enjoy building, and what you want to learn next.]',
-    skills: 'Astro, HTML, CSS, JavaScript',
+    name: "Ralph Damiel Bofil Loraez",
+    role: "BSIS, 3rd Year",
+    school: "CSAV",
+    bio: "I am a third-year BSIS student at CSAV. I enjoy building websites and learning new web technologies. I am currently focused on improving my front-end development skills and exploring back-end frameworks.",
+    skills: "Astro, HTML, CSS, JavaScript",
   },
   {
-    name: '[Member 2 full name]',
-    role: '[Course], [Year level]',
-    school: 'CSAV',
-    bio: '[Two or three sentences about you: what you study, what you enjoy building, and what you want to learn next.]',
-    skills: 'Python, PHP, MySQL, Git',
+    name: "Jive Miguel Valencia Dequito",
+    role: "[Course], [Year level]",
+    school: "CSAV",
+    bio: "I am a student at CSAV with a passion for web development. I have experience in various programming languages and enjoy working on both front-end and back-end projects. I am always eager to learn new technologies and improve my coding skills.",
+    skills: "Python, PHP, MySQL, Git",
   },
 ];
 ---
@@ -22,12 +22,10 @@ const members = [
   <div class="container">
     <div class="intro">
       <h2>About us</h2>
-      <p class="lead">
-        We are two students who build websites and software.
-      </p>
+      <p class="lead">We are two students who build websites and software.</p>
       <p>
-        Finora is our aquatic pet store project. It shows how we design and code a complete
-        site, and the people behind it are below.
+        Finora is our aquatic pet store project. It shows how we design and code
+        a complete site, and the people behind it are below.
       </p>
     </div>
 
@@ -35,9 +33,13 @@ const members = [
       {members.map((m) => (
         <li class="member">
           <h3>{m.name}</h3>
-          <p class="meta">{m.role}, {m.school}</p>
+          <p class="meta">
+            {m.role}, {m.school}
+          </p>
           <p>{m.bio}</p>
-          <p class="skills"><strong>Skills:</strong> {m.skills}</p>
+          <p class="skills">
+            <strong>Skills:</strong> {m.skills}
+          </p>
         </li>
       ))}
     </ul>
@@ -45,8 +47,17 @@ const members = [
 </section>
 
 <style>
-  .intro { display: grid; gap: 1.25rem; margin-bottom: 3rem; max-width: 60ch; }
-  .lead { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
+  .intro {
+    display: grid;
+    gap: 1.25rem;
+    margin-bottom: 3rem;
+    max-width: 60ch;
+  }
+  .lead {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
 
   .members {
     display: grid;
@@ -60,6 +71,10 @@ const members = [
     padding-left: 1.5rem;
     border-left: 8px solid var(--fg);
   }
-  .meta { font-weight: 700; }
-  .skills { margin-top: 0.5rem; }
+  .meta {
+    font-weight: 700;
+  }
+  .skills {
+    margin-top: 0.5rem;
+  }
 </style>
