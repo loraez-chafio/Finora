@@ -1,70 +1,395 @@
 ---
-// TODO: confirm which phone number belongs to which member.
+// TODO: confirm the phone numbers and roles.
+// photo is optional. To make a photo permanent for every visitor, put the file in
+// /public/team and set photo: '/team/ralph.jpg'.
 const members = [
-  { name: 'Ralph Damiel B. Loraez', email: 'c20234061.loraez@csav.edu.ph', phone: '0912 345 6789' },
-  { name: 'Jive Miguel V. Dequito', email: 'c20245392.dequito@csav.edu.ph', phone: '0993 327 2908' },
+  {
+    id: 'ralph',
+    name: 'Ralph Damiel B. Loraez',
+    initials: 'RL',
+    role: 'Web developer and programmer',
+    email: 'c20234061.loraez@csav.edu.ph',
+    phone: '0912 345 6789',
+    photo: '',
+  },
+  {
+    id: 'jive',
+    name: 'Jive Miguel V. Dequito',
+    initials: 'JD',
+    role: 'Web developer and programmer',
+    email: 'c20245392.dequito@csav.edu.ph',
+    phone: '0993 327 2908',
+    photo: '',
+  },
 ];
 ---
 
 <section id="contact" class="section">
-  <div class="container wrap">
-    <div class="info">
+  <div class="container">
+    <div class="head">
       <h2>Contact</h2>
-      <p class="lead">Need a website or a programmer? Send us a message.</p>
-
-      <ul class="people">
-        {members.map((m) => (
-          <li>
-            <h3>{m.name}</h3>
-            <p><a href={`mailto:${m.email}`}>{m.email}</a></p>
-            <p><a href={`tel:${m.phone.replace(/\s/g, '')}`}>{m.phone}</a></p>
-          </li>
-        ))}
-      </ul>
+      <p class="lead">Need a website or a programmer? Reach either of us directly.</p>
     </div>
 
-    <form action="mailto:c20234061.loraez@csav.edu.ph" method="post" enctype="text/plain">
-      <label>
-        Name
-        <input type="text" name="name" required autocomplete="name" />
-      </label>
-      <label>
-        Email
-        <input type="email" name="email" required autocomplete="email" />
-      </label>
-      <label>
-        Message
-        <textarea name="message" rows="5" required></textarea>
-      </label>
-      <button type="submit" class="btn">Send message</button>
-    </form>
+    <ul class="profiles">
+      {members.map((m) => (
+        <li class="profile" data-profile={m.id}>
+          <div class="photo" data-frame>
+            <img data-photo data-default={m.photo} alt={`Photo of ${m.name}`} draggable="false" hidden />
+            <span class="initials" data-initials>{m.initials}</span>
+          </div>
+
+          <div class="controls">
+            <label class="btn btn-outline pick" data-upload>
+              Upload photo
+              <input
+                class="sr"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                data-file
+                aria-label={`Upload a photo for ${m.name}`}
+              />
+            </label>
+            <label class="zoom" data-zoom-wrap hidden>
+              <span>Zoom</span>
+              <input type="range" min="1" max="3" step="0.01" value="1" data-zoom />
+            </label>
+          </div>
+          <p class="msg" data-msg role="status"></p>
+
+          <div class="details">
+            <h3>{m.name}</h3>
+            <p class="role">{m.role}</p>
+            <p><span class="key">Email</span> <a href={`mailto:${m.email}`}>{m.email}</a></p>
+            <p><span class="key">Phone</span> <a href={`tel:${m.phone.replace(/\s/g, '')}`}>{m.phone}</a></p>
+          </div>
+        </li>
+      ))}
+    </ul>
+
+    <div class="send">
+      <h3>Send us a message</h3>
+      <form action="mailto:c20234061.loraez@csav.edu.ph" method="post" enctype="text/plain">
+        <label>
+          Name
+          <input type="text" name="name" required autocomplete="name" />
+        </label>
+        <label>
+          Email
+          <input type="email" name="email" required autocomplete="email" />
+        </label>
+        <label>
+          Message
+          <textarea name="message" rows="5" required></textarea>
+        </label>
+        <button type="submit" class="btn">Send message</button>
+      </form>
+    </div>
   </div>
 </section>
 
-<style>
-  .wrap {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 4rem;
-    align-items: start;
+<script>
+  const MAX_SIZE = 1000; // longest side of the saved photo, in pixels
+  const MAX_FILE = 8 * 1024 * 1024; // 8 MB
+  const MAX_ZOOM = 3;
+  const STEP = 0.03; // arrow-key nudge, as a fraction of the box
+
+  type Adjust = { x: number; y: number; zoom: number };
+
+  // Shrink the chosen image and turn it into a JPEG so it can be saved.
+  function toJpeg(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        const scale = Math.min(1, MAX_SIZE / Math.max(image.width, image.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(image.width * scale);
+        canvas.height = Math.round(image.height * scale);
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          URL.revokeObjectURL(url);
+          reject(new Error('canvas'));
+          return;
+        }
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('load'));
+      };
+      image.src = url;
+    });
   }
-  .info { display: grid; gap: 1.5rem; }
+
+  document.querySelectorAll<HTMLElement>('[data-profile]').forEach((card) => {
+    const photoKey = 'finora-photo-' + card.dataset.profile;
+    const adjustKey = photoKey + '-adjust';
+
+    const frame = card.querySelector<HTMLElement>('[data-frame]')!;
+    const img = card.querySelector<HTMLImageElement>('[data-photo]')!;
+    const initials = card.querySelector<HTMLElement>('[data-initials]')!;
+    const input = card.querySelector<HTMLInputElement>('[data-file]')!;
+    const upload = card.querySelector<HTMLElement>('[data-upload]')!;
+    const zoomWrap = card.querySelector<HTMLElement>('[data-zoom-wrap]')!;
+    const zoom = card.querySelector<HTMLInputElement>('[data-zoom]')!;
+    const msg = card.querySelector<HTMLElement>('[data-msg]')!;
+    const fallback = img.dataset.default ?? '';
+
+    let hasPhoto = false;
+    let adjust: Adjust = { x: 0, y: 0, zoom: 1 };
+
+    const hint = 'Drag the photo to move it, or use the slider to zoom. The photo is locked and cannot be replaced.';
+
+    // Keep the photo covering the whole box.
+    function apply() {
+      adjust.zoom = Math.min(MAX_ZOOM, Math.max(1, adjust.zoom));
+      const limit = (adjust.zoom - 1) / 2;
+      adjust.x = Math.min(limit, Math.max(-limit, adjust.x));
+      adjust.y = Math.min(limit, Math.max(-limit, adjust.y));
+      const w = frame.clientWidth;
+      const h = frame.clientHeight;
+      img.style.transform = `translate(${adjust.x * w}px, ${adjust.y * h}px) scale(${adjust.zoom})`;
+    }
+
+    function readPhoto(): string {
+      try {
+        return localStorage.getItem(photoKey) ?? '';
+      } catch {
+        return '';
+      }
+    }
+
+    function readAdjust(): Adjust {
+      try {
+        const raw = localStorage.getItem(adjustKey);
+        const data = raw ? JSON.parse(raw) : null;
+        if (data && [data.x, data.y, data.zoom].every((n) => typeof n === 'number' && isFinite(n))) {
+          return { x: data.x, y: data.y, zoom: data.zoom };
+        }
+      } catch {
+        /* use the default position */
+      }
+      return { x: 0, y: 0, zoom: 1 };
+    }
+
+    function saveAdjust() {
+      try {
+        localStorage.setItem(adjustKey, JSON.stringify(adjust));
+      } catch {
+        /* the position lasts until refresh */
+      }
+    }
+
+    // Show the photo and lock the upload for good.
+    function lockWithPhoto(src: string) {
+      hasPhoto = true;
+      img.src = src;
+      img.hidden = false;
+      initials.hidden = true;
+      upload.hidden = true;
+      zoomWrap.hidden = false;
+      frame.classList.add('adjustable');
+      frame.tabIndex = 0;
+      frame.setAttribute('role', 'group');
+      frame.setAttribute('aria-label', 'Photo position. Drag it or use the arrow keys.');
+      zoom.value = String(adjust.zoom);
+      apply();
+    }
+
+    const saved = readPhoto();
+    if (saved || fallback) {
+      adjust = readAdjust();
+      lockWithPhoto(saved || fallback);
+      msg.textContent = hint;
+    }
+
+    new ResizeObserver(() => hasPhoto && apply()).observe(frame);
+
+    // Upload: allowed once, and it cannot be undone.
+    input.addEventListener('change', async () => {
+      const file = input.files?.[0];
+      input.value = '';
+      if (!file || hasPhoto) return;
+
+      if (!file.type.startsWith('image/')) {
+        msg.textContent = 'Please choose a JPEG, PNG or WebP image.';
+        return;
+      }
+      if (file.size > MAX_FILE) {
+        msg.textContent = 'That image is too large. Please choose one under 8 MB.';
+        return;
+      }
+      if (!window.confirm('Once uploaded, this photo cannot be removed or replaced. Continue?')) return;
+
+      try {
+        const data = await toJpeg(file);
+        adjust = { x: 0, y: 0, zoom: 1 };
+        lockWithPhoto(data);
+        try {
+          localStorage.setItem(photoKey, data);
+          saveAdjust();
+          msg.textContent = hint;
+        } catch {
+          msg.textContent = 'Photo shown, but it could not be saved in this browser, so it will reset on reload.';
+        }
+      } catch {
+        msg.textContent = 'That image could not be read. Try another one.';
+      }
+    });
+
+    // Adjust: drag to move.
+    let drag: { px: number; py: number; x: number; y: number } | null = null;
+
+    frame.addEventListener('pointerdown', (e) => {
+      if (!hasPhoto) return;
+      drag = { px: e.clientX, py: e.clientY, x: adjust.x, y: adjust.y };
+      frame.setPointerCapture(e.pointerId);
+      frame.classList.add('dragging');
+    });
+    frame.addEventListener('pointermove', (e) => {
+      if (!drag) return;
+      adjust.x = drag.x + (e.clientX - drag.px) / frame.clientWidth;
+      adjust.y = drag.y + (e.clientY - drag.py) / frame.clientHeight;
+      apply();
+    });
+    const endDrag = () => {
+      if (!drag) return;
+      drag = null;
+      frame.classList.remove('dragging');
+      saveAdjust();
+    };
+    frame.addEventListener('pointerup', endDrag);
+    frame.addEventListener('pointercancel', endDrag);
+
+    // Adjust: arrow keys to move.
+    frame.addEventListener('keydown', (e) => {
+      if (!hasPhoto) return;
+      const moves: Record<string, [number, number]> = {
+        ArrowLeft: [-STEP, 0],
+        ArrowRight: [STEP, 0],
+        ArrowUp: [0, -STEP],
+        ArrowDown: [0, STEP],
+      };
+      const move = moves[e.key];
+      if (!move) return;
+      e.preventDefault();
+      adjust.x += move[0];
+      adjust.y += move[1];
+      apply();
+      saveAdjust();
+    });
+
+    // Adjust: slider to zoom.
+    zoom.addEventListener('input', () => {
+      adjust.zoom = Number(zoom.value);
+      apply();
+    });
+    zoom.addEventListener('change', saveAdjust);
+  });
+</script>
+
+<style>
+  .head { display: grid; gap: 1.25rem; margin-bottom: 3rem; }
   .lead { font-size: 1.5rem; font-weight: 600; line-height: 1.3; }
 
-  .people { display: grid; gap: 1.5rem; }
-  .people li {
+  /* Two separate profile boxes, always the same size */
+  .profiles {
     display: grid;
-    gap: 0.25rem;
-    padding-left: 1.5rem;
-    border-left: 8px solid var(--fg);
+    grid-template-columns: repeat(auto-fit, minmax(240px, 20rem));
+    justify-content: start;
+    gap: 1.5rem;
+    align-items: stretch;
   }
-  .people p { font-weight: 700; }
-  .people a { text-decoration: underline; }
+  .profile {
+    display: grid;
+    /* photo, controls, message, then details fill the height that is left */
+    grid-template-rows: auto auto auto 1fr;
+    height: 100%;
+    border: var(--line) solid var(--black);
+  }
 
+  .photo {
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: 10rem;
+    overflow: hidden;
+    background: var(--accent);
+    color: var(--on-accent);
+    border-bottom: var(--line) solid var(--black);
+  }
+  .photo img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform-origin: center;
+    user-select: none;
+    pointer-events: none;
+  }
+  .photo img[hidden], .initials[hidden] { display: none; }
+  .initials { font-size: 3rem; font-weight: 900; letter-spacing: -0.03em; }
+
+  /* Photo can be dragged once it is uploaded */
+  .photo.adjustable { cursor: grab; touch-action: none; }
+  .photo.adjustable.dragging { cursor: grabbing; }
+  .photo.adjustable:focus-visible { outline: 3px solid currentColor; outline-offset: -6px; }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem 1rem;
+    padding: 0.85rem 1.1rem 0;
+  }
+  .pick { display: inline-block; padding: 0.4rem 0.9rem; font-size: 0.9rem; }
+  .pick[hidden], .zoom[hidden] { display: none; }
+  .pick:focus-within { outline: 3px solid currentColor; outline-offset: 4px; }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  .zoom {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+    font-size: 0.9rem;
+  }
+  .zoom input { flex: 1; min-width: 0; accent-color: var(--accent); }
+
+  .msg { padding: 0.4rem 1.1rem 0; min-height: 1.25rem; font-size: 0.85rem; font-weight: 600; }
+
+  .details {
+    display: grid;
+    gap: 0.3rem;
+    align-content: start;
+    min-width: 0;
+    margin-top: 0.25rem;
+    padding: 1rem 1.1rem 1.1rem;
+    border-top: 2px solid var(--black);
+  }
+  .details h3 { font-size: 1.2rem; }
+  .details p { overflow-wrap: anywhere; font-size: 0.95rem; }
+  .role { font-weight: 600; }
+  .key { display: inline-block; min-width: 3.5rem; font-weight: 700; }
+  .details a { text-decoration: underline; }
+
+  /* Message form */
+  .send { display: grid; gap: 1.5rem; max-width: 40rem; margin-top: 5rem; }
+  .send h3 { font-size: 2rem; }
   form { display: grid; gap: 1.25rem; }
-  label { display: grid; gap: 0.4rem; font-weight: 700; }
+  form label { display: grid; gap: 0.4rem; font-weight: 700; }
 
-  input, textarea {
+  input[type='text'], input[type='email'], textarea {
     font: inherit;
     padding: 0.85rem 1rem;
     color: var(--black);
@@ -72,11 +397,11 @@ const members = [
     border: var(--line) solid var(--black);
     border-radius: 0;
   }
-  input:focus, textarea:focus {
+  input[type='text']:focus, input[type='email']:focus, textarea:focus {
     outline: none;
     color: var(--on-accent);
     background: var(--accent);
   }
 
-  button { justify-self: start; }
+  button[type='submit'] { justify-self: start; }
 </style>
