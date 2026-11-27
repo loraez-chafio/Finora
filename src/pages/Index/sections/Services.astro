@@ -59,6 +59,44 @@ const groups = [
   </div>
 </section>
 
+<script>
+  // Tie the aqua highlight to scroll position, in both directions.
+  const prices = Array.from(document.querySelectorAll<HTMLElement>('#services .price'));
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function update() {
+    const vh = window.innerHeight;
+    const start = vh * 0.95; // price is just entering from the bottom: 0%
+    const end = vh * 0.55; // price has reached the middle of the screen: 100%
+
+    prices.forEach((price) => {
+      const rect = price.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const p = Math.min(1, Math.max(0, (start - center) / (start - end)));
+      price.style.setProperty('--p', p.toFixed(3));
+      price.classList.toggle('filled', p > 0.5);
+    });
+  }
+
+  if (!reduceMotion && prices.length > 0) {
+    prices.forEach((price) => price.classList.add('armed'));
+
+    let waiting = false;
+    const onScroll = () => {
+      if (waiting) return;
+      waiting = true;
+      requestAnimationFrame(() => {
+        update();
+        waiting = false;
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    update();
+  }
+</script>
+
 <style>
   .head { display: grid; gap: 1.25rem; margin-bottom: 4rem; max-width: 60ch; }
   .head p { font-size: 1.2rem; }
@@ -91,7 +129,27 @@ const groups = [
 
   .price { display: grid; justify-items: end; gap: 0.1rem; }
   .unit { font-size: 0.95rem; }
-  .amount { font-size: 2rem; font-weight: 900; line-height: 1; }
+  .amount {
+    padding: 0.2rem 0.5rem;
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1;
+    color: var(--on-accent);
+    /* The aqua highlight is a background that can grow from the right edge. */
+    background: linear-gradient(var(--accent), var(--accent)) right center / 100% 100% no-repeat;
+  }
+
+  /* Scroll-linked highlight: --p (0 to 1) is set by the script below.
+     The aqua grows from the right edge as the price scrolls up the screen,
+     and shrinks back when you scroll up again. */
+  .price.armed .amount {
+    color: var(--fg);
+    background-size: calc(var(--p, 0) * 100%) 100%;
+    transition: color 0.15s ease;
+  }
+  .price.armed.filled .amount {
+    color: var(--on-accent);
+  }
 
   @media (min-width: 900px) {
     .group { grid-template-columns: 16rem minmax(0, 1fr); }

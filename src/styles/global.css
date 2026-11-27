@@ -1,6 +1,14 @@
 :root {
+  /* --black is the ink color and --white is the paper color.
+     Dark mode swaps them below, so every page flips automatically. */
   --black: #000;
   --white: #fff;
+
+  /* The 10% accent: aqua. Text on top of it is always black. */
+  --accent: #00d9c8;
+  --on-accent: #000;
+
+  color-scheme: light;
 
   /* Each section sets these two. Default is black on white. */
   --fg: var(--black);
@@ -8,6 +16,13 @@
 
   --font: 'Archivo', system-ui, sans-serif;
   --line: 3px;
+}
+
+/* Dark mode: set by the toggle in the header. */
+:root[data-theme='dark'] {
+  --black: #fff;
+  --white: #000;
+  color-scheme: dark;
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -24,7 +39,7 @@ body {
   background: var(--bg);
 }
 
-::selection { background: var(--black); color: var(--white); }
+::selection { background: var(--accent); color: var(--on-accent); }
 
 h1, h2, h3 {
   margin: 0;
@@ -65,7 +80,7 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
   --bg: var(--black);
 }
 
-/* Buttons flip with their section. */
+/* Main buttons are aqua with black text. Hover flips them to the section colors. */
 .btn {
   display: inline-block;
   padding: 0.9rem 1.8rem;
@@ -73,13 +88,14 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
   font-weight: 700;
   text-decoration: none;
   cursor: pointer;
-  color: var(--bg);
-  background: var(--fg);
+  color: var(--on-accent);
+  background: var(--accent);
   border: var(--line) solid var(--fg);
   transition: color 0.15s ease, background 0.15s ease;
 }
 .btn:hover { color: var(--fg); background: var(--bg); }
 
+/* Outline buttons stay black and white. */
 .btn-outline { color: var(--fg); background: transparent; }
 .btn-outline:hover { color: var(--bg); background: var(--fg); }
 
@@ -90,4 +106,3 @@ ul, ol { list-style: none; margin: 0; padding: 0; }
     scroll-behavior: auto !important;
   }
 }
-

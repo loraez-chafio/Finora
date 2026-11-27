@@ -13,7 +13,7 @@ const isShop = Astro.url.pathname.startsWith('/products');
       <p>
         {isShop
           ? 'Aquatic pets, tanks and supplies in one shop.'
-          : 'A web and programming portfolio, presented as an aquatic pet store.'}
+          : 'A web and programming portfolio, made for the deep end.'}
       </p>
     </div>
 
@@ -39,7 +39,7 @@ const isShop = Astro.url.pathname.startsWith('/products');
   <p class="copy container">
     {isShop
       ? `© ${year} AquaWorld. All rights reserved.`
-      : `© ${year} Finora. A student project by Ralph Damiel B. Loraez and Jive Miguel V. Dequito.`}
+      : `© ${year} Finora. A project by Ralph Damiel B. Loraez and Jive Miguel V. Dequito.`}
   </p>
 </footer>
 
@@ -59,7 +59,7 @@ const isShop = Astro.url.pathname.startsWith('/products');
   h3 { margin-bottom: 0.9rem; font-size: 1.1rem; }
   ul { display: grid; gap: 0.35rem; }
   a { text-decoration: none; border-bottom: 2px solid transparent; }
-  a:hover { border-bottom-color: var(--fg); }
+  a:hover { border-bottom-color: var(--accent); }
   .copy {
     margin-top: 3rem;
     padding-top: 1.2rem;
